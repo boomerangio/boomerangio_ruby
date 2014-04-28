@@ -3,7 +3,7 @@ require 'ostruct'
 
 module Boomerangio
   class Client
-    HOST = "http://api.boomerang.dev/v1"
+    HOST = "http://api.boomerang.io/v1"
 
     def initialize(opts={})
   	  @api_key = opts[:api_key]
