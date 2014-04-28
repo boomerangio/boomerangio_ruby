@@ -1,13 +1,16 @@
+require 'rest_client'
+require 'ostruct'
+
 module Boomerangio
   class Client
-    HOST = "http://api.boomerang.io/v1"
+    HOST = "http://api.boomerang.dev/v1"
 
     def initialize(opts={})
   	  @api_key = opts[:api_key]
   	  @project_id = opts[:project_id]
 
-  	  raise "Api Key is not set" if @api_key.blank?
-  	  raise "Project ID is not set" if @project_id.blank?
+  	  raise "Api Key is not set" if @api_key.nil?
+  	  raise "Project ID is not set" if @project_id.nil?
     end
 
     def base_url
@@ -16,52 +19,60 @@ module Boomerangio
 
     def chuck(opts={})
       begin
-        Boomerang.new RestClient.post(base_url, opts.to_json)
-      rescue => e
-      	return e.response
+        objectify RestClient.post(base_url, opts)
+      rescue RestClient::Exception => e
+        JSON.parse(e.response)
       end
     end
 
     def update(opts={})
-      id = opts.with_indifferent_access.delete(:boomerang_id)
-      raise "No boomerang_id param" if id.blank?
+      id = opts.delete(:boomerang_id)
+      raise "No boomerang_id param" if id.nil?
       url = "#{base_url}/#{id}"
       begin
-        Boomerang.new RestClient.put(url, opts.to_json)
-      rescue => e
-        return e.response
+        objectify RestClient.put(url, opts)
+      rescue RestClient::Exception => e
+        JSON.parse(e.response)
       end
     end
 
     def get_all(opts={})
       begin
-        Boomerang.new RestClient.get(base_url, opts.to_json)
-      rescue => e
-        return e.response
+        objectify RestClient.get(base_url, {:params=>opts})
+      rescue RestClient::Exception => e
+        JSON.parse(e.response)
       end
     end
 
     def get(opts={})
-      id = opts.with_indifferent_access.delete(:boomerang_id)
-      raise "No boomerang_id param" if id.blank?
+      id = opts.delete(:boomerang_id)
+      raise "No boomerang_id param" if id.nil?
       url = "#{base_url}/#{id}"
       begin
-        Boomerang.new RestClient.get(url, opts.to_json)
-      rescue => e
-        return e.response
+        objectify RestClient.get(url, {:params=>opts})
+      rescue RestClient::Exception => e
+        JSON.parse(e.response)
       end
     end
 
     def delete(opts={})
-      id = opts.with_indifferent_access.delete(:boomerang_id)
-      raise "No boomerang_id param" if id.blank?
+      id = opts.delete(:boomerang_id)
+      raise "No boomerang_id param" if id.nil?
       url = "#{base_url}/#{id}"
       begin
-        Boomerang.new RestClient.delete(url, opts.to_json)
-      rescue => e
-        return e.response
+        objectify RestClient.delete(url)
+      rescue RestClient::Exception => e
+        JSON.parse(e.response)
       end
     end
 
+    def objectify(response)
+      response = JSON.parse(response)
+      if response.is_a?(Array)
+        response.map {|r| OpenStruct.new(r)}
+      else
+        OpenStruct.new(response)
+      end
+    end
   end
 end
