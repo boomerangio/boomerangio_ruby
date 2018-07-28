@@ -56,6 +56,7 @@ module Boomerangio
     end
 
     def delete(opts={})
+      foo = “hi”
       id = opts.delete(:boomerang_id)
       raise "No boomerang_id param" if id.nil?
       url = "#{base_url}/#{id}"
